@@ -16,6 +16,12 @@ export class Task {
 
   @Prop({ default: false })
   completed: boolean;
+
+  @Prop({ default: false })
+  isDeleted: boolean;
+
+  @Prop()
+  deletedAt?: Date;
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task);

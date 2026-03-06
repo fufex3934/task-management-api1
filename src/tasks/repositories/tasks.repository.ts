@@ -23,7 +23,7 @@ export class TasksRepository {
   }
 
   async findById(id: string): Promise<Task | null> {
-    return await this.taskModel.findById(id).exec();
+    return await this.taskModel.findOne({ _id: id, isDeleted: false });
   }
 
   async findAll(options: TaskQueryOptions = {}): Promise<Task[]> {
@@ -36,7 +36,7 @@ export class TasksRepository {
       sortOrder = 'desc',
     } = options;
 
-    const filter: any = {};
+    const filter: any = { isDeleted: false };
     if (completed !== undefined) filter.completed = completed;
     if (priority !== undefined) filter.priority = priority;
 
@@ -51,9 +51,17 @@ export class TasksRepository {
   }
 
   async updateCompleted(id: string, completed: boolean): Promise<Task | null> {
+    return await this.taskModel.findOneAndUpdate(
+      { _id: id, isDeleted: false },
+      { completed: completed },
+      { new: true },
+    );
+  }
+
+  async softDelete(id: string) {
     return await this.taskModel.findByIdAndUpdate(
       id,
-      { completed: completed },
+      { isDeleted: true, deletedAt: new Date() },
       { new: true },
     );
   }
