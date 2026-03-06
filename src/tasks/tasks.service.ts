@@ -13,14 +13,14 @@ export class TasksService {
     private readonly logger: LoggerService,
   ) {}
 
-  async createTask(createTaskDto: CreateTaskDto) {
-    const task = await this.tasksRepository.create(createTaskDto);
+  async createTask(createTaskDto: CreateTaskDto, userId: string) {
+    const task = await this.tasksRepository.create(createTaskDto, userId);
     this.logger.log(`Task created: ${task._id.toString()}`, TasksService.name);
     return task;
   }
 
-  async findTaskById(id: string) {
-    const task = await this.tasksRepository.findById(id);
+  async findTaskById(id: string, userId: string) {
+    const task = await this.tasksRepository.findById(id, userId);
 
     if (!task) {
       this.logger.warn(`Task not found: ${id}`, TasksService.name);
@@ -34,8 +34,13 @@ export class TasksService {
     return this.tasksRepository.findAll(query);
   }
 
-  async toggleCompleted(id: string, completed: boolean) {
-    const task = await this.tasksRepository.updateCompleted(id, completed);
+  async toggleCompleted(id: string, completed: boolean, userId: string) {
+    const task = await this.tasksRepository.updateCompleted(
+      id,
+
+      completed,
+      userId,
+    );
     if (!task) {
       this.logger.warn(`Task not found for toggle: ${id}`, TasksService.name);
       throw new NotFoundException('Task not found');

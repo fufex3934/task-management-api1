@@ -22,6 +22,13 @@ export class Task {
 
   @Prop()
   deletedAt?: Date;
+
+  @Prop({ required: true })
+  userId: string;
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task);
+TaskSchema.index(
+  { userId: 1, isDeleted: 1, createdAt: -1 },
+  { name: 'user_active_tasks_idx' },
+);

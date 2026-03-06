@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -25,21 +26,24 @@ export class TasksController {
   ) {}
 
   @Post()
-  createTask(@Body() createTaskDto: CreateTaskDto) {
-    return this.taskService.createTask(createTaskDto);
+  createTask(@Body() createTaskDto: CreateTaskDto, @Req() req: any) {
+    return this.taskService.createTask(createTaskDto, req.user.userId);
   }
 
   @Get(':id')
-  findTask(@Param('id') id: string) {
-    return this.taskService.findTaskById(id);
+  findTask(@Param('id') id: string, @Req() req: any) {
+    return this.taskService.findTaskById(id, req.user.userId);
   }
 
   @Get()
-  findTasks(@Query() query: TaskQueryDto) {
+  findTasks(@Query() query: TaskQueryDto, @Req() req: any) {
     const end = this.requestHistogram.startTimer();
     this.requestCounter.inc();
 
+    const userId = req.user.userId;
+
     const result = this.taskService.findAllTasks({
+      userId,
       page: query.page || 1,
       limit: query.limit || 10,
       completed:
@@ -56,7 +60,11 @@ export class TasksController {
     return result;
   }
   @Patch(':id')
-  toggleStatus(@Param('id') id: string, @Body() completed: boolean) {
-    return this.taskService.toggleCompleted(id, completed);
+  toggleStatus(
+    @Param('id') id: string,
+    @Body() completed: boolean,
+    @Req() req: any,
+  ) {
+    return this.taskService.toggleCompleted(id, completed, req.user.userId);
   }
 }

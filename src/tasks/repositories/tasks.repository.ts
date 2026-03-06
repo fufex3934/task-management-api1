@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { CreateTaskDto } from '../dto/create-task.dto';
 
 export interface TaskQueryOptions {
+  userId: string;
   page?: number;
   limit?: number;
   completed?: boolean;
@@ -17,17 +18,21 @@ export interface TaskQueryOptions {
 export class TasksRepository {
   constructor(@InjectModel(Task.name) private taskModel: Model<TaskDocument>) {}
 
-  async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
-    const task = new this.taskModel(createTaskDto);
+  async create(
+    createTaskDto: CreateTaskDto,
+    userId: string,
+  ): Promise<TaskDocument> {
+    const task = new this.taskModel({ ...createTaskDto, userId });
     return await task.save();
   }
 
-  async findById(id: string): Promise<Task | null> {
-    return await this.taskModel.findOne({ _id: id, isDeleted: false });
+  async findById(id: string, userId: string): Promise<Task | null> {
+    return await this.taskModel.findOne({ _id: id, userId, isDeleted: false });
   }
 
-  async findAll(options: TaskQueryOptions = {}): Promise<Task[]> {
+  async findAll(options: TaskQueryOptions): Promise<Task[]> {
     const {
+      userId,
       page = 1,
       limit = 10,
       completed,
@@ -36,7 +41,7 @@ export class TasksRepository {
       sortOrder = 'desc',
     } = options;
 
-    const filter: any = { isDeleted: false };
+    const filter: any = { userId, isDeleted: false };
     if (completed !== undefined) filter.completed = completed;
     if (priority !== undefined) filter.priority = priority;
 
@@ -50,9 +55,13 @@ export class TasksRepository {
       .exec();
   }
 
-  async updateCompleted(id: string, completed: boolean): Promise<Task | null> {
+  async updateCompleted(
+    id: string,
+    completed: boolean,
+    userId: string,
+  ): Promise<Task | null> {
     return await this.taskModel.findOneAndUpdate(
-      { _id: id, isDeleted: false },
+      { _id: id, userId, isDeleted: false },
       { completed: completed },
       { new: true },
     );
