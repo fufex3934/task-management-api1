@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { TasksRepository } from './repositories/tasks.repository';
 import { CreateTaskDto } from './dto/create-task.dto';
 
@@ -11,7 +11,12 @@ export class TasksService {
   }
 
   async findTaskById(id: string) {
-    return this.tasksRepository.findById(id);
+    const task = await this.tasksRepository.findById(id);
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+    return task;
   }
 
   async findAllTasks() {
@@ -19,6 +24,10 @@ export class TasksService {
   }
 
   async toggleCompleted(id: string, completed: boolean) {
-    return this.tasksRepository.updateCompleted(id, completed);
+    const task = await this.tasksRepository.updateCompleted(id, completed);
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+    return task;
   }
 }
