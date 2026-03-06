@@ -4,21 +4,29 @@ import {
   TasksRepository,
 } from './repositories/tasks.repository';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly tasksRepository: TasksRepository) {}
+  constructor(
+    private readonly tasksRepository: TasksRepository,
+    private readonly logger: LoggerService,
+  ) {}
 
   async createTask(createTaskDto: CreateTaskDto) {
-    return this.tasksRepository.create(createTaskDto);
+    const task = await this.tasksRepository.create(createTaskDto);
+    this.logger.log(`Task created: ${task._id.toString()}`, TasksService.name);
+    return task;
   }
 
   async findTaskById(id: string) {
     const task = await this.tasksRepository.findById(id);
 
     if (!task) {
+      this.logger.warn(`Task not found: ${id}`, TasksService.name);
       throw new NotFoundException('Task not found');
     }
+    this.logger.log(`Task retrieved: ${id}`, TasksService.name);
     return task;
   }
 
@@ -29,8 +37,13 @@ export class TasksService {
   async toggleCompleted(id: string, completed: boolean) {
     const task = await this.tasksRepository.updateCompleted(id, completed);
     if (!task) {
+      this.logger.warn(`Task not found for toggle: ${id}`, TasksService.name);
       throw new NotFoundException('Task not found');
     }
+    this.logger.log(
+      `Task ${id} completion toggled to ${completed}`,
+      TasksService.name,
+    );
     return task;
   }
 }

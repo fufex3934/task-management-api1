@@ -17,7 +17,7 @@ export interface TaskQueryOptions {
 export class TasksRepository {
   constructor(@InjectModel(Task.name) private taskModel: Model<TaskDocument>) {}
 
-  async create(createTaskDto: CreateTaskDto): Promise<Task> {
+  async create(createTaskDto: CreateTaskDto): Promise<TaskDocument> {
     const task = new this.taskModel(createTaskDto);
     return await task.save();
   }
