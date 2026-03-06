@@ -20,4 +20,12 @@ export class TasksRepository {
   async findAll(): Promise<Task[]> {
     return await this.taskModel.find().exec();
   }
+
+  async updateCompleted(id: string, completed: boolean): Promise<Task | null> {
+    return await this.taskModel.findByIdAndUpdate(
+      id,
+      { completed: completed },
+      { new: true },
+    );
+  }
 }
