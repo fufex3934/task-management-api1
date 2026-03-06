@@ -51,4 +51,8 @@ export class TasksService {
     );
     return task;
   }
+
+  async softDelete(id: string) {
+    return this.tasksRepository.softDelete(id);
+  }
 }
