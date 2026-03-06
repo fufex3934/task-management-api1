@@ -4,6 +4,15 @@ import { Task, TaskDocument } from '../schemas/task.schema';
 import { Model } from 'mongoose';
 import { CreateTaskDto } from '../dto/create-task.dto';
 
+export interface TaskQueryOptions {
+  page?: number;
+  limit?: number;
+  completed?: boolean;
+  priority?: number;
+  sortBy?: 'createdAt' | 'priority';
+  sortOrder?: 'asc' | 'desc';
+}
+
 @Injectable()
 export class TasksRepository {
   constructor(@InjectModel(Task.name) private taskModel: Model<TaskDocument>) {}
@@ -17,8 +26,28 @@ export class TasksRepository {
     return await this.taskModel.findById(id).exec();
   }
 
-  async findAll(): Promise<Task[]> {
-    return await this.taskModel.find().exec();
+  async findAll(options: TaskQueryOptions = {}): Promise<Task[]> {
+    const {
+      page = 1,
+      limit = 10,
+      completed,
+      priority,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = options;
+
+    const filter: any = {};
+    if (completed !== undefined) filter.completed = completed;
+    if (priority !== undefined) filter.priority = priority;
+
+    const skip = (page - 1) * limit;
+
+    return this.taskModel
+      .find(filter)
+      .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
+      .skip(skip)
+      .limit(limit)
+      .exec();
   }
 
   async updateCompleted(id: string, completed: boolean): Promise<Task | null> {
